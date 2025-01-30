@@ -31,7 +31,7 @@ data = {
 
 df = pd.DataFrame(data)
 
-# Salvar em arquivo Parquet
-df.to_parquet('vendas.parquet', engine='pyarrow')
+# Salvar em arquivo csv
+df.to_csv('vendas.csv')
 
-print("DataFrame salvo em vendas.parquet")
+print("DataFrame salvo em vendas.csv")
