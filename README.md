@@ -95,7 +95,7 @@ ORDER BY Cliente_ID;
 
 Saída:
 
-![Média de dias entre vendas - SQL](assets\media_dias_entre_vendas_sql.png)  
+![Média de dias entre vendas - SQL](assets/media_dias_entre_vendas_sql.png)  
 
 > [!CAUTION]  
 > O cálculo apesar de mais performático no SQL ele não permite dinamismo com outros filtros como em um relatório do Power BI  
@@ -107,7 +107,7 @@ Crie um novo arquivo do Power BI Desktop e ingira os dados do SQL Server com o P
 
 No canvas coloque um segmentador com a coluna `Cliente_ID` e filtre de 1 a 10 para demonstração.  
 
-![segmentador](assets\segmentador.png)
+![segmentador](assets/segmentador.png)
 
 
 Crie a medida `Última Data Venda`   
@@ -144,7 +144,7 @@ Ordene pela coluna `Venda_ID`.
 
 <br>  
 
-![Medida `Última Data Venda` aplicada ao visual](assets\ultima_data_venda_adicionada.png)  
+![Medida `Última Data Venda` aplicada ao visual](assets/ultima_data_venda_adicionada.png)  
 
 Agora crie a medida `Média Dias Entre Vendas`  
 
@@ -179,7 +179,7 @@ RETURN
 Acrescente na tela uma nova tabela com a coluna `Cliente_ID` e a medida recém-criada `Média Dias Entre Vendas`.  
 Ordene por `Cliente_ID` e verifique a medida criada.  
 
-![Medida `Média Dias Entre Vendas` aplicada ao visual](assets\media_dias_entre_vendas_adicionada.png)  
+![Medida `Média Dias Entre Vendas` aplicada ao visual](assets/media_dias_entre_vendas_adicionada.png)  
 
 ## Conclusão
 
