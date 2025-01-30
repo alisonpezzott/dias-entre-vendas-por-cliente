@@ -65,14 +65,13 @@ WITH CTE_DataVendaAnterior AS (
         Venda_ID,
         Data,
         COALESCE (
-			LAG ( Data ) 
-            OVER (
+	    	LAG ( Data ) OVER (
                 PARTITION BY Cliente_ID 
                 ORDER BY Data ASC 
             ),
-			Data
+		    Data
 		)
-	AS Ultima_Data_Venda
+		AS Ultima_Data_Venda
     FROM vendas
 ),
 CTE_DifDias AS (
@@ -116,19 +115,19 @@ Crie a medida `Última Data Venda`
 Última Data Venda = 
 
 VAR __DataAnterior = 
-    OFFSET(
+    OFFSET (
         -1,
-        ALLSELECTED(
+        ALLSELECTED (
             vendas[Cliente_ID], 
             vendas[Venda_ID], 
             vendas[Data]
         ),
-        ORDERBY([Data], ASC),
-        PARTITIONBY(vendas[Cliente_ID])
+        ORDERBY ( [Data], ASC ),
+        PARTITIONBY ( vendas[Cliente_ID] )
     )
             
 VAR __Resultado = 
-    MAXX(__dataAnterior, [Data] )
+    MAXX ( __dataAnterior, [Data] )
 
 RETURN
     __Resultado
@@ -189,18 +188,9 @@ A partir de agora você pode aplicar outras análises com esta métrica seja par
 
 > [!TIP]  
 > Siga meus canais:  
-> YouTube: youtube.com/@alisonpezzott  
-> Linkedin: linkedin.com/in/alisonpezzott  
-> Instagram: instagram.com/alisonpezzott  
-> GitHub: github.com/alisonpezzott  
-> Discord: discord.gg/sJTDvWz9sM  
-> Telegram: t.me/alisonpezzottsuporte  
-
-
-
-
-
-
-
-
-
+> YouTube: [youtube.com/@alisonpezzott](youtube.com/@alisonpezzott)
+> Linkedin: [linkedin.com/in/alisonpezzott](linkedin.com/in/alisonpezzott)
+> Instagram: [instagram.com/alisonpezzott](instagram.com/alisonpezzott)
+> GitHub: [github.com/alisonpezzott](github.com/alisonpezzott)  
+> Discord: [discord.gg/sJTDvWz9sM](discord.gg/sJTDvWz9sM)  
+> Telegram: [t.me/alisonpezzott](t.me/alisonpezzott)
