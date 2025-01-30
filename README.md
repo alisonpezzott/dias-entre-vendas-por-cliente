@@ -6,7 +6,7 @@
 
 ## Download da base
 
-Faça o download do arquivo  
+Faça o download do arquivo [vendas.csv](https://github.com/alisonpezzott/intervalo-medio-clientes/blob/main/vendas.csv)  
 Extraia e coloque o arquivo dentro da pasta `C:/Temp/`.   
 
 
