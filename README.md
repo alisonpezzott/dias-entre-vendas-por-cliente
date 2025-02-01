@@ -32,6 +32,7 @@ CREATE TABLE vendas (
 	Data DATE, 
 	Cliente_ID INT, 
 	Loja_ID INT, 
+    Produto_ID INT,
 	Valor MONEY 
 ); 
 
