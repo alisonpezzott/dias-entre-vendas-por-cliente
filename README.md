@@ -1,4 +1,4 @@
-# Média de dias entre vendas por clientes
+# Dias entre vendas por clientes
 
 > [!NOTE]
 > Repositório criando por Alison Pezzott em resposta ao questionamento em https://discord.com/channels/1279778182941245503/1332361733645537440  
