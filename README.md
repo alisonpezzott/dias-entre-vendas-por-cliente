@@ -99,83 +99,43 @@ Saída:
 
 ## Power BI
 
-Crie um novo arquivo do Power BI Desktop e ingira os dados do SQL Server com o Power Query, feche e aplique.
+Crie um novo arquivo do Power BI Desktop e ingira os dados do SQL Server com o Power Query, feche e aplique.  
 
-No canvas coloque um segmentador com a coluna `Cliente_ID` e filtre de 1 a 10 para demonstração.  
-
-![segmentador](assets/segmentador.png)
-
-
-Crie a medida `Última Data Venda`   
+Crie a coluna calcula na tabela `vendas`  
 
 ```dax
-Última Data Venda = 
+VendaAnteriorDoCliente = 
 
-VAR __DataAnterior = 
-    OFFSET (
-        -1,
-        ALLSELECTED (
-            vendas[Cliente_ID], 
-            vendas[Venda_ID], 
-            vendas[Data]
-        ),
-        ORDERBY ( [Data], ASC ),
-        PARTITIONBY ( vendas[Cliente_ID] )
-    )
-            
-VAR __Resultado = 
-    MAXX ( __dataAnterior, [Data] )
-
-RETURN
-    __Resultado
-```
-
-Coloque na tela um visual de tabela. Inclua as colunas `Venda_ID`, `Cliente_ID`, `Data` e a medida `Última Data Venda`. 
-Ordene pela coluna `Venda_ID`.  
-<br>  
-
-> [!IMPORTANT]  
-> No menu lateral onde são adicionados os campos, clique nos campos adicionados com o botão direito e clique em `Mostrar itens sem dados`.  
-> Entenda como o resultado está sendo particionado por cada um dos clientes.  
-
-<br>  
-
-![Medida `Última Data Venda` aplicada ao visual](assets/ultima_data_venda_adicionada.png)  
-
-Agora crie a medida `Média Dias Entre Vendas`  
-
-```dax
-Média Dias Entre Vendas = 
-
-VAR __srcTable = 
-    ADDCOLUMNS (
-        ADDCOLUMNS (
-            SUMMARIZE (
-                vendas,
-                vendas[Cliente_ID],
-                vendas[Venda_ID],
-                vendas[Data]
+    COALESCE(
+        SELECTCOLUMNS(
+            OFFSET(
+                -1,
+                ALL(vendas[Cliente_ID], vendas[Venda_ID], vendas[Data]),
+                ORDERBY([Data]),
+                PARTITIONBY(vendas[Cliente_ID])
             ),
-            "@UltimaData", COALESCE ( [Última Data Venda], vendas[Data] )
+            [Data]
         ),
-        "@DifDias", DATEDIFF ( [@UltimaData], [Data], DAY )
-    ) 
-
-VAR __Resultado = 
-	AVERAGEX (
-		__srcTable,
-		[@DifDias]
-	)
-	
-RETURN
-	__Resultado 
+        [Data]
+    )
 
 ```  
 
-Acrescente na tela uma nova tabela com a coluna `Cliente_ID` e a medida recém-criada `Média Dias Entre Vendas`.  
-Ordene por `Cliente_ID` e verifique a medida criada.  
 
-![Medida `Média Dias Entre Vendas` aplicada ao visual](assets/media_dias_entre_vendas_adicionada.png)  
+Crie a medida `Média dias entre vendas por cliente`   
+
+```dax
+Média dias entre vendas por cliente =
+			
+    AVERAGEX(
+        vendas,
+        DATEDIFF(vendas[VendaAnteriorDoCliente], vendas[Data], DAY)
+    ) 
+
+```
+
+Acrescente na tela uma tabela com a coluna `Cliente_ID` e a medida recém-criada `Média dias entre vendas por cliente`.  
+Ordene por `Cliente_ID` e verifique a medida criada.  
 
 ## Conclusão
 

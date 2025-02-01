@@ -1,0 +1,11 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/gitIntegration/platformProperties/2.0.0/schema.json",
+  "metadata": {
+    "type": "Report",
+    "displayName": "dias_entre_vendas_por_clientes"
+  },
+  "config": {
+    "version": "2.0",
+    "logicalId": "24696b6d-6635-4565-9bd5-5d442b7786a3"
+  }
+}

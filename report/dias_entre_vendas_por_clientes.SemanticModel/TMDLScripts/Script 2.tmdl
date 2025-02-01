@@ -1,0 +1,34 @@
+createOrReplace
+
+	ref table faixas
+
+		measure 'Clientes por Faixas' = ```
+				
+				
+				VAR __source =
+				    ADDCOLUMNS (
+					    VALUES ( vendas[Cliente_ID] ),
+				        "@Media", [Média dias entre vendas por cliente]
+				    )
+				
+				VAR __faixas = 
+				    ADDCOLUMNS (
+				        faixas,
+				        "@Clientes",
+				        COUNTROWS (
+				            FILTER ( 
+				                __source,
+				                [@Media] >= faixas[Min] &&
+				                [@Media] <  faixas[Max]
+				            )
+				        )
+				    )
+				
+				RETURN
+				    SUMX ( __faixas, [@Clientes] )
+				    
+				```
+			formatString: 0
+			lineageTag: dadbad88-f541-4dcb-b680-ca4a14cfa2bd
+			displayFolder: Medidas
+
