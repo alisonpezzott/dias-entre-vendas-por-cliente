@@ -31,8 +31,6 @@ CREATE TABLE vendas (
 	Venda_ID INT, 
 	Data DATE, 
 	Cliente_ID INT, 
-	Loja_ID INT, 
-    Produto_ID INT,
 	Valor MONEY 
 ); 
 
@@ -45,15 +43,10 @@ WITH (
 	FIELDTERMINATOR = ';',      
 	FIRSTROW = 2  
 ); 
-```
 
-
-Executamos a query abaixo para simples verificação.  
-
-```sql
 SELECT TOP (100) * FROM vendas;
 
-SELECT COUNT (*) FROM vendas;
+SELECT COUNT (*) FROM vendas; 
 
 ```
 
