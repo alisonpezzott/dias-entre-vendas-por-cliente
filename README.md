@@ -27,9 +27,9 @@ GO
 DROP TABLE IF EXISTS vendas;
 GO
 
-CREATE TABLE vendas (       
-	Venda_ID INT, 
-	Data DATE, 
+CREATE TABLE vendas (
+    Venda_ID INT,       
+    Data DATE, 
 	Cliente_ID INT, 
 	Valor MONEY 
 ); 
@@ -50,35 +50,34 @@ SELECT COUNT (*) FROM vendas;
 
 ```
 
-Vamos rodar agora o código para encontrar a média de tempo entre vendas por cliente.  
+Vamos rodar agora o código para encontrar a média de dias entre vendas por cliente.  
 
 ```sql
 WITH CTE_DataVendaAnterior AS (
     SELECT 
-        Cliente_ID,
         Venda_ID,
         Data,
-        COALESCE (
-            LAG ( Data ) OVER ( PARTITION BY Cliente_ID ORDER BY Data ASC ),
-            Data
-        ) AS Ultima_Data_Venda
+        Cliente_ID,
+        LAG(Data) 
+            OVER ( 
+                PARTITION BY Cliente_ID 
+                ORDER BY Data ASC, Venda_ID ASC 
+            ) AS UltimaDataVenda
     FROM vendas
 ),
 CTE_DifDias AS (
     SELECT 
-        Cliente_ID,
         Venda_ID,
         Data,
-        Ultima_Data_Venda,
-        DATEDIFF ( DAY, Ultima_Data_Venda, Data ) AS Dif_Dias
+        Cliente_ID,
+        UltimaDataVenda,
+        DATEDIFF ( DAY, UltimaDataVenda, Data ) AS DifDias
     FROM CTE_DataVendaAnterior
+    WHERE UltimaDataVenda IS NOT NULL
 )
 SELECT 
-    Cliente_ID,
-    AVG ( Dif_Dias * 1.0 ) AS Media_Dias_Entre_Vendas
-FROM CTE_DifDias
-GROUP BY Cliente_ID 
-ORDER BY Cliente_ID; 
+    AVG ( DifDias * 1.0 ) AS DiasEntreVendas
+FROM CTE_DifDias; 
 
 ```
 
@@ -86,45 +85,142 @@ ORDER BY Cliente_ID;
 
 Crie um novo arquivo do Power BI Desktop e ingira os dados do SQL Server com o Power Query, feche e aplique.  
 
-Crie a coluna calcula na tabela `vendas`  
+Crie a coluna calcula na tabela `fact_vendas`  
 
 ```dax
-VendaAnteriorDoCliente = 
+DataVendaAnterior = 
 
-    COALESCE(
-        SELECTCOLUMNS(
-            OFFSET(
-                -1,
-                ALL(vendas[Cliente_ID], vendas[Venda_ID], vendas[Data]),
-                ORDERBY([Data]),
-                PARTITIONBY(vendas[Cliente_ID])
-            ),
-            [Data]
+VAR __UltimaDataVenda = 
+    OFFSET (
+        -1,
+        ALLSELECTED ( 
+            fVendas[Data],
+            fVendas[Venda_ID],
+            fVendas[Cliente_ID]
         ),
-        [Data]
+        ORDERBY ( [Data], ASC, [Venda_ID], ASC ), 
+        PARTITIONBY (  fVendas[Cliente_ID] )
     )
+
+VAR __Resultado =  
+    SELECTCOLUMNS ( __UltimaDataVenda, [Data] )
+
+RETURN 
+    __Resultado
+    
 
 ```  
 
 
-Crie a medida `Média dias entre vendas por cliente`   
+Crie a medida `Dias entre vendas`   
 
 ```dax
-Média dias entre vendas por cliente =
-			
-    AVERAGEX(
-        vendas,
-        DATEDIFF(vendas[VendaAnteriorDoCliente], vendas[Data], DAY)
-    ) 
+Dias entre vendas = 
+    AVERAGEX (
+        FILTER (
+            fVendas,
+            [DataVendaAnterior]
+        ), 
+        DATEDIFF ( [DataVendaAnterior], [Data],  DAY )
+    )
 
 ```
 
-Acrescente na tela uma tabela com a coluna `Cliente_ID` e a medida recém-criada `Média dias entre vendas por cliente`.  
+Acrescente na tela uma tabela com a coluna `Cliente_ID` e a medida recém-criada `Dias entre vendas`.  
 Ordene por `Cliente_ID` e verifique a medida criada.  
 
-## Conclusão
+## Faixas de dias  
 
-Com este repositório você aprendeu como calcular a média de dias entre as vendas por clientes de forma congelada com a linguagem SQL e de forma dinâmica com a linguagem DAX no Microsoft Power BI.  
+Este exemplo permite que você crie faixas de dias para os clientes.  
+
+Crie uma tabela calculada em DAX chamada de `faixas`  
+
+```dax
+faixas = 
+
+-- Parâmetros
+VAR __Inicio = 0
+VAR __Final = 365
+VAR __Passo = 30
+
+-- Criação da tabela
+VAR __padrao = 
+    SELECTCOLUMNS (
+        GENERATESERIES ( __Inicio, __Final, __Passo ),
+        "Min", [Value],
+        "Max", [Value] + __Passo
+    )
+
+VAR __ultimaFaixa = {( __Final + __Passo, 999999 )}
+
+VAR __estrutura = UNION ( __padrao, __ultimaFaixa )
+
+RETURN
+
+-- Adiciona a coluna faixa
+    ADDCOLUMNS (
+        __estrutura,
+        "Faixa", 
+        SWITCH ( 
+            TRUE(), 
+            [Min] = 0, "<" & [Max],
+            [Max] = 999999, [Min] & "+",
+            [Min] & "~" & [Max]
+        )
+    )
+
+```  
+
+> [!IMPORTANT] 
+> Ordene a coluna `Faixa` pela coluna `Min`.  
+
+Como esta é uma tabela auxiliar e desconectada do modelo crie a medida que fará conexão com ela através da função FILTER.  
+
+```dax
+Clientes por faixas = 
+
+VAR __fonte =
+    ADDCOLUMNS (
+	    VALUES ( vendas[Cliente_ID] ),
+        "@Media", [Dias entre vendas]
+    )
+
+VAR __faixas = 
+    ADDCOLUMNS (
+        faixas,
+        "@Clientes",
+        COUNTROWS (
+            FILTER ( 
+                __fonte,
+                [@Media] >= faixas[Min] &&
+                [@Media] <  faixas[Max]
+            )
+        )
+    )
+
+VAR __Resultado = SUMX ( __faixas, [@Clientes] )
+
+RETURN
+    __Resultado
+```  
+
+Coloque na tela um visual de colunas cluesterizadas, coloque no eixo x a coluna `'faixas'[Faixa]`  e no eixo Y a medida recém-criada `Clientes por faixas`.  
+
+A partir de então esta medida se torna coringa para que as faixas filtrem qualquer medida basta usá-la na sintaxe das medidas assim como no exemplo abaixo onde estamos segregando o valor total por faixas.  
+
+```dax
+Valor total por faixas = 
+    CALCULATE (
+        SUM ( vendas[Valor] ),
+        FILTER (
+            VALUES ( vendas[Cliente_ID] ),
+            [Clientes por faixas]
+        )
+    ) 
+```  
+
+
+## Conclusão
 
 A partir de agora você pode aplicar outras análises com esta métrica seja para filtrar clientes ou analisar correlação com outras variáveis como valor de vendas, ticket médio, churn entre outros.
 

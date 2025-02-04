@@ -1,9 +1,0 @@
-{
-  "version": "4.0",
-  "datasetReference": {
-    "byPath": {
-      "path": "../dias_entre_vendas_por_clientes.SemanticModel"
-    },
-    "byConnection": null
-  }
-}
