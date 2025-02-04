@@ -82,14 +82,6 @@ ORDER BY Cliente_ID;
 
 ```
 
-Saída:
-
-![Média de dias entre vendas - SQL](assets/media_dias_entre_vendas_sql.png)  
-
-> [!CAUTION]  
-> O cálculo apesar de mais performático no SQL ele não permite dinamismo com outros filtros como em um relatório do Power BI  
-
-
 ## Power BI
 
 Crie um novo arquivo do Power BI Desktop e ingira os dados do SQL Server com o Power Query, feche e aplique.  
