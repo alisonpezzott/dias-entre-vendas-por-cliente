@@ -94,12 +94,12 @@ VAR __UltimaDataVenda =
     OFFSET (
         -1,
         ALLSELECTED ( 
-            fVendas[Data],
-            fVendas[Venda_ID],
-            fVendas[Cliente_ID]
+            'vendas'[Data],
+            'vendas'[Venda_ID],
+            'vendas'[Cliente_ID]
         ),
         ORDERBY ( [Data], ASC, [Venda_ID], ASC ), 
-        PARTITIONBY (  fVendas[Cliente_ID] )
+        PARTITIONBY (  'vendas'[Cliente_ID] )
     )
 
 VAR __Resultado =  
@@ -118,7 +118,7 @@ Crie a medida `Dias entre vendas`
 Dias entre vendas = 
     AVERAGEX (
         FILTER (
-            fVendas,
+            'vendas',
             [DataVendaAnterior]
         ), 
         DATEDIFF ( [DataVendaAnterior], [Data],  DAY )
@@ -181,19 +181,19 @@ Clientes por faixas =
 
 VAR __fonte =
     ADDCOLUMNS (
-	    VALUES ( vendas[Cliente_ID] ),
+	    VALUES ( 'vendas'[Cliente_ID] ),
         "@Media", [Dias entre vendas]
     )
 
 VAR __faixas = 
     ADDCOLUMNS (
-        faixas,
+        'faixas',
         "@Clientes",
         COUNTROWS (
             FILTER ( 
                 __fonte,
-                [@Media] >= faixas[Min] &&
-                [@Media] <  faixas[Max]
+                [@Media] >= 'faixas'[Min] &&
+                [@Media] <  'faixas'[Max]
             )
         )
     )
@@ -211,9 +211,9 @@ A partir de então esta medida se torna coringa para que as faixas filtrem qualq
 ```dax
 Valor total por faixas = 
     CALCULATE (
-        SUM ( vendas[Valor] ),
+        SUM ( 'vendas'[Valor] ),
         FILTER (
-            VALUES ( vendas[Cliente_ID] ),
+            VALUES ( 'vendas'[Cliente_ID] ),
             [Clientes por faixas]
         )
     ) 
